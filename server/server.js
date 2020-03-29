@@ -6,8 +6,8 @@ const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 
 var {mongoose} = require('./db/mongoose.js');
-var {Todo} = require('./models/todo.js');
-var {User} = require('./models/user.js');
+var {Todo} = require('./models/todo');
+var {User} = require('./models/user');
 
 var app = express();
 // const port = process.env.PORT || 3000;
@@ -97,6 +97,25 @@ app.patch('/todos/:id', (req, res)=>{
         res.status(400).send();
     });
 });
+
+
+// user routes
+app.post('/users', (req, res)=>{
+    var body = _.pick(req.body, ['email', 'password']);
+
+    // return req.body;
+    var user = new User(body);
+
+    user.save().then(()=>{
+        return user.generateAuthToken();
+        // res.send(user);
+    }).then((token)=>{
+        res.header('x-auth', token).send(user);
+    }).catch((e)=>{
+        res.status(400).send(e);
+    });
+});
+
 
 app.listen(process.env.PORT, ()=>{
     console.log(`Server started at port ${process.env.PORT}`);
